@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name  }}-app"
+  labels:
+    appName: {{ .Release.Name  }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      appName: {{ .Release.Name  }}
+
+  template:
+    metadata:
+      labels:
+        appName: {{ .Release.Name  }}
+    spec:
+      imagePullSecrets:
+      - name: {{ .Release.Name  }}
+      containers:
+      - name: {{ .Release.Name }}
+        image: {{ .Values.image.name }} 
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 5
+          successThreshold: 3
+          initialDelaySeconds: 10
+          failureThreshold: 3
+          
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 5
+          successThreshold: 3
+          initialDelaySeconds: 10
+          failureThreshold: 3 
+
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+            {{- toYaml .Values.resources | nindent 10 }}
+      
